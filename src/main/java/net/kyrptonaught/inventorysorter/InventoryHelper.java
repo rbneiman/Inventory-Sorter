@@ -94,7 +94,7 @@ public class InventoryHelper {
             addStackWithMerge(stacks, inv.getStack(startSlot + i));
 
         stacks.sort(Comparator.comparing(stack -> SortCases.getStringForSort(stack, sortType)));
-        if (stacks.size() == 0) return;
+        if (stacks.isEmpty()) return;
         for (int i = 0; i < invSize; i++)
             inv.setStack(startSlot + i, i < stacks.size() ? stacks.get(i) : ItemStack.EMPTY);
         inv.markDirty();
@@ -132,7 +132,7 @@ public class InventoryHelper {
             return false;
         if (itemStack_1.getDamage() != itemStack_2.getDamage())
             return false;
-        return ItemStack.canCombine(itemStack_1, itemStack_2);
+        return ItemStack.areItemsAndComponentsEqual(itemStack_1, itemStack_2) && (itemStack_1.getCount() + itemStack_2.getCount()) < itemStack_1.getMaxCount();
     }
 
     public static boolean shouldDisplayBtns(PlayerEntity player) {

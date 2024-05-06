@@ -1,33 +1,53 @@
 package net.kyrptonaught.inventorysorter.network;
 
-import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kyrptonaught.inventorysorter.InventoryHelper;
-import net.kyrptonaught.inventorysorter.SortCases;
 import net.kyrptonaught.inventorysorter.client.InventorySorterModClient;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemGroups;
+import net.minecraft.registry.ServerDynamicRegistryType;
+import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
+import java.util.List;
+
 public class InventorySortPacket {
-    private static final Identifier SORT_INV_PACKET = new Identifier("inventorysorter", "sort_inv_packet");
+    static boolean populated = false;
+
+    private static void populateEntries(MinecraftServer server){
+        List<ItemGroup> groups = ItemGroups.getGroups();
+
+        ItemGroup.DisplayContext dumnmy = new ItemGroup.DisplayContext(server.getOverworld().getEnabledFeatures(), true, server.getRegistryManager());
+
+        for(ItemGroup group : groups){
+            group.updateEntries(dumnmy);
+        }
+
+        populated = true;
+    }
 
     public static void registerReceivePacket() {
-        ServerPlayNetworking.registerGlobalReceiver(SORT_INV_PACKET, ((server, player, handler, buf, responseSender) -> {
-            boolean playerInv = buf.readBoolean();
-            SortCases.SortType sortType = SortCases.SortType.values()[buf.readInt()];
-            server.execute(() -> InventoryHelper.sortInv(player, playerInv, sortType));
+        PayloadTypeRegistry.playC2S().register(InventorySortPacketPayload.ID, InventorySortPacketPayload.CODEC);
+
+
+        ServerPlayNetworking.registerGlobalReceiver(InventorySortPacketPayload.ID, ((payload, context) -> {
+            if(!populated){
+                populateEntries(context.player().server);
+            }
+            context.player().server.execute(() -> InventoryHelper.sortInv(context.player(), payload.isPlayerInv(), payload.sortType()));
         }));
     }
 
     @Environment(EnvType.CLIENT)
     public static void sendSortPacket(boolean playerInv) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeBoolean(playerInv);
-        buf.writeInt(InventorySorterModClient.getConfig().sortType.ordinal());
-        ClientPlayNetworking.send(SORT_INV_PACKET, new PacketByteBuf(buf));
+
+        ClientPlayNetworking.send(new InventorySortPacketPayload(playerInv, InventorySorterModClient.getConfig().sortType));
         if (!playerInv && InventorySorterModClient.getConfig().sortPlayer)
             sendSortPacket(true);
     }

@@ -1,10 +1,10 @@
 plugins {
-	id 'fabric-loom' version '1.2-SNAPSHOT'
+	id 'fabric-loom' version '1.6-SNAPSHOT'
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -26,9 +26,13 @@ dependencies {
 	modImplementation include("net.kyrptonaught:kyrptconfig:1.5.8-1.20.4") { exclude group: "net.fabricmc.fabric-api" }
 
 	//update modmenu when kyrptconfig is pulling old version
-	modImplementation ("com.terraformersmc:modmenu:9.0.0"){
+	modImplementation ("com.terraformersmc:modmenu:10.0.0-beta.1"){
 		transitive(false)
 	}
+}
+
+loom{
+	accessWidenerPath = file("src/main/resources/sorter.accesswidener")
 }
 
 
@@ -42,7 +46,7 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-	it.options.release = 17
+	it.options.release = 21
 }
 
 jar {

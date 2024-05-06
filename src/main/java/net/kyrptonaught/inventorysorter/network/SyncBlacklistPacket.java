@@ -4,23 +4,48 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kyrptonaught.inventorysorter.InventorySorterMod;
 import net.kyrptonaught.inventorysorter.client.config.IgnoreList;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
+import java.util.Collections;
+
 public class SyncBlacklistPacket {
-    private static final Identifier SYNC_BLACKLIST = new Identifier("inventorysorter", "sync_blacklist_packet");
+//    public static final Identifier SYNC_BLACKLIST = new Identifier("inventorysorter", "sync_blacklist_packet");
+    static boolean registered = false;
 
     public static void registerSyncOnPlayerJoin() {
-        ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer) -> packetSender.sendPacket(SYNC_BLACKLIST, getBuf()));
+        if(!registered){
+            PayloadTypeRegistry.playS2C().register(BlacklistPacketPayload.ID, BlacklistPacketPayload.CODEC);
+            registered = true;
+        }
+
+
+
+        ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer) ->
+                packetSender.sendPacket(getPacket())
+        );
     }
 
     public static void sync(ServerPlayerEntity player) {
-        ServerPlayNetworking.send(player, SYNC_BLACKLIST, getBuf());
+        ServerPlayNetworking.send(player, getPacket());
+    }
+
+    private static BlacklistPacketPayload getPacket(){
+        IgnoreList blacklist = InventorySorterMod.getBlackList();
+
+        return new BlacklistPacketPayload(
+                blacklist.hideSortBtnsList.toArray(new String[0]),
+                blacklist.doNotSortList.toArray(new String[0])
+        );
     }
 
     private static PacketByteBuf getBuf() {
@@ -41,14 +66,25 @@ public class SyncBlacklistPacket {
 
     @Environment(EnvType.CLIENT)
     public static void registerReceiveBlackList() {
-        ClientPlayNetworking.registerGlobalReceiver(SYNC_BLACKLIST, (client, handler, packet, sender) -> {
-            int numHides = packet.readInt();
-            for (int i = 0; i < numHides; i++)
-                InventorySorterMod.getBlackList().hideSortBtnsList.add(packet.readString());
+        if(!registered){
+            PayloadTypeRegistry.playS2C().register(BlacklistPacketPayload.ID, BlacklistPacketPayload.CODEC);
+            registered = true;
+        }
 
-            int numNoSort = packet.readInt();
-            for (int i = 0; i < numNoSort; i++)
-                InventorySorterMod.getBlackList().doNotSortList.add(packet.readString());
+
+
+        ClientPlayNetworking.registerGlobalReceiver(BlacklistPacketPayload.ID, (payload, context) -> {
+
+            Collections.addAll(InventorySorterMod.getBlackList().hideSortBtnsList, payload.hides());
+            Collections.addAll(InventorySorterMod.getBlackList().doNotSortList, payload.noSorts());
+
+//            int numHides = packet.readInt();
+//            for (int i = 0; i < numHides; i++)
+//                InventorySorterMod.getBlackList().hideSortBtnsList.add(packet.readString());
+//
+//            int numNoSort = packet.readInt();
+//            for (int i = 0; i < numNoSort; i++)
+//                InventorySorterMod.getBlackList().doNotSortList.add(packet.readString());
         });
     }
 }

@@ -1,17 +1,26 @@
 package net.kyrptonaught.inventorysorter;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class SortCases {
+    static boolean registered = false;
     public enum SortType {
         NAME, CATEGORY, MOD, ID;
 
@@ -29,10 +38,11 @@ public class SortCases {
                 return (group != null ? group.getDisplayName().getString() : "zzz") + itemName;
             }
             case MOD -> {
+
                 return Registries.ITEM.getId(item).getNamespace() + itemName;
             }
             case NAME -> {
-                if (stack.hasCustomName()) return stack.getName() + itemName;
+                if (stack.contains(DataComponentTypes.CUSTOM_NAME)) return stack.getName() + itemName;
             }
         }
 
@@ -52,10 +62,18 @@ public class SortCases {
 
     private static String specialCases(ItemStack stack) {
         Item item = stack.getItem();
-        NbtCompound tag = stack.getNbt();
-
-        if (tag != null && tag.contains("SkullOwner"))
-            return playerHeadCase(stack);
+//        DynamicRegistryManager registryManager = stack.getHolder().getRegistryManager();
+//        NbtElement element = stack.encode(registryManager);
+//
+//        if (stack.contains(DataComponentTypes.CUSTOM_DATA)){
+//            NbtComponent tag = stack.get(DataComponentTypes.CUSTOM_DATA);
+//            if(tag != null && tag.contains("SkullOwner")){
+//                return playerHeadCase(stack);
+//            }
+//        }
+        if(item instanceof PlayerHeadItem playerHeadItem){
+            return playerHeadCase(stack, playerHeadItem);
+        }
         if (stack.getCount() != stack.getMaxCount())
             return stackSize(stack);
         if (item instanceof EnchantedBookItem)
@@ -65,10 +83,12 @@ public class SortCases {
         return item.toString();
     }
 
-    private static String playerHeadCase(ItemStack stack) {
-        NbtCompound tag = stack.getNbt();
-        NbtCompound skullOwner = tag.getCompound("SkullOwner");
-        String ownerName = skullOwner.getString("Name");
+    private static String playerHeadCase(ItemStack stack, PlayerHeadItem headItem) {
+//        NbtCompound tag = stack.getNbt();
+//        NbtCompound skullOwner = component.get(Registries.ENTITY_TYPE.getCodec().fieldOf("id"););
+//        String ownerName = skullOwner.getString("Name");
+
+        String ownerName = headItem.getName(stack).getString();
 
         // this is duplicated logic, so we should probably refactor
         String count = "";
@@ -84,22 +104,31 @@ public class SortCases {
     }
 
     private static String enchantedBookNameCase(ItemStack stack) {
-        NbtList enchants = EnchantedBookItem.getEnchantmentNbt(stack);
+//        NbtList enchants = EnchantedBookItem.getEnchantmentNbt(stack);
+        ItemEnchantmentsComponent enchantmentsComponent = stack.getEnchantments();
+        Set<RegistryEntry<Enchantment>> enchantments = enchantmentsComponent.getEnchantments();
+
         List<String> names = new ArrayList<>();
         StringBuilder enchantNames = new StringBuilder();
-        for (int i = 0; i < enchants.size(); i++) {
-            NbtCompound enchantTag = enchants.getCompound(i);
-            Identifier enchantID = Identifier.tryParse(enchantTag.getString("id"));
-            if (enchantID == null) continue;
-            Enchantment enchant = Registries.ENCHANTMENT.get(enchantID);
-            if (enchant == null) continue;
-            names.add(enchant.getName(enchantTag.getInt("lvl")).getString());
+
+        for(RegistryEntry<Enchantment> entry : enchantments){
+            Enchantment enchantment = entry.value();
+            names.add(enchantment.getName(enchantmentsComponent.getLevel(enchantment)).getString());
         }
+
+//        for (int i = 0; i < enchantments.size(); i++) {
+//            NbtCompound enchantTag = enchants.getCompound(i);
+//            Identifier enchantID = Identifier.tryParse(enchantTag.getString("id"));
+//            if (enchantID == null) continue;
+//            Enchantment enchant = Registries.ENCHANTMENT.get(enchantID);
+//            if (enchant == null) continue;
+//            names.add(enchant.getName(enchantTag.getInt("lvl")).getString());
+//        }
         Collections.sort(names);
         for (String enchant : names) {
             enchantNames.append(enchant).append(" ");
         }
-        return stack.getItem().toString() + " " + enchants.size() + " " + enchantNames;
+        return stack.getItem().toString() + " " + enchantmentsComponent.getSize() + " " + enchantNames;
     }
 
     private static String toolDuribilityCase(ItemStack stack) {
