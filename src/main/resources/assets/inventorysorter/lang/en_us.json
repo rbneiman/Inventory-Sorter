@@ -42,6 +42,8 @@
   "key.inventorysorter.sorttype.category": "Category",
   "key.inventorysorter.sorttype.mod": "Mod",
   "key.inventorysorter.sorttype.id": "Id",
+  "key.inventorysorter.sorttype.tree": "Tree",
+
 
   "key.inventorysorter.sortbtn.sort": "Sort by: ",
   "key.inventorysorter.sortbtn.debug": "Click while holding LEFTCONTROL",

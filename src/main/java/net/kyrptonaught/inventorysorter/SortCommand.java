@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.kyrptonaught.inventorysorter.interfaces.InvSorterPlayer;
 import net.kyrptonaught.inventorysorter.network.SyncBlacklistPacket;
+import net.kyrptonaught.inventorysorter.sorttree.SortTree;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
@@ -15,13 +16,31 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import org.apache.logging.log4j.Logger;
 
 import java.util.function.BiConsumer;
 
 
 public class SortCommand {
+    private static final Logger logger = InventorySorterMod.logger;
+
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         LiteralArgumentBuilder<ServerCommandSource> invsortCommand = CommandManager.literal("invsort").requires((source) -> source.hasPermissionLevel(0));
+
+        invsortCommand.then(CommandManager.literal("itemDump")
+                .executes((commandContext) -> {
+                    logger.debug("Dumping items");
+                    InvsortUtils.dumpItems(commandContext);
+                    return 1;
+                })
+        );
+
+        invsortCommand.then(CommandManager.literal("debug")
+                .executes((commandContext) -> {
+//                    commandContext.getSource()
+                    return 1;
+                })
+        );
 
         invsortCommand.then(CommandManager.literal("sort")
                 .requires((source) -> source.hasPermissionLevel(0))

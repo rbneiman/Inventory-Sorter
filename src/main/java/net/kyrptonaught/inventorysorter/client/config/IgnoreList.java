@@ -11,11 +11,16 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
 public class IgnoreList implements AbstractConfigFile {
+    private static final Logger logger = InventorySorterMod.logger;
     public static final String DOWNLOAD_URL = "https://raw.githubusercontent.com/kyrptonaught/Inventory-Sorter/1.19/DownloadableBlacklist.json5";
 
     @Comment("URL for blacklist to be downloaded from")
@@ -27,8 +32,8 @@ public class IgnoreList implements AbstractConfigFile {
 
     public void downloadList(String URL) {
         try {
-            URL url = new URL(URL);
-            String downloaded = IOUtils.toString(url.openStream());
+            URL url = new URI(URL).toURL();
+            String downloaded = IOUtils.toString(url.openStream(), StandardCharsets.UTF_8);
             IgnoreList newList = InventorySorterMod.configManager.getJANKSON().fromJson(downloaded, IgnoreList.class);
 
             doNotSortList.addAll(newList.doNotSortList);
@@ -37,7 +42,7 @@ public class IgnoreList implements AbstractConfigFile {
             SystemToast.add(MinecraftClient.getInstance().getToastManager(), SystemToast.Type.PERIODIC_NOTIFICATION, Text.translatable("key.inventorysorter.toast.pass"), null);
         } catch (Exception e) {
             SystemToast.add(MinecraftClient.getInstance().getToastManager(), SystemToast.Type.PERIODIC_NOTIFICATION, Text.translatable("key.inventorysorter.toast.error"), Text.translatable("key.inventorysorter.toast.error2"));
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 

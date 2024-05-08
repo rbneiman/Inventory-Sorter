@@ -80,6 +80,7 @@ public class InventoryHelper {
             return true;
         } else if (canSortInventory(player)) {
             Inventory inv = ((SortableContainer) player.currentScreenHandler).getInventory();
+
             if (inv != null) {
                 sortInv(inv, 0, inv.size(), sortType);
                 return true;
@@ -92,8 +93,9 @@ public class InventoryHelper {
         List<ItemStack> stacks = new ArrayList<>();
         for (int i = 0; i < invSize; i++)
             addStackWithMerge(stacks, inv.getStack(startSlot + i));
-
-        stacks.sort(Comparator.comparing(stack -> SortCases.getStringForSort(stack, sortType)));
+        Comparator<ItemStack> comparator = SortCases.getComparatorForSortType(sortType);
+        stacks.sort(comparator);
+//        stacks.sort(Comparator.comparing(stack -> SortCases.getStringForSort(stack, sortType)));
         if (stacks.isEmpty()) return;
         for (int i = 0; i < invSize; i++)
             inv.setStack(startSlot + i, i < stacks.size() ? stacks.get(i) : ItemStack.EMPTY);
@@ -170,4 +172,6 @@ public class InventoryHelper {
         if (numSlots <= 36) return false;
         return numSlots - 36 >= 9;
     }
+
+
 }

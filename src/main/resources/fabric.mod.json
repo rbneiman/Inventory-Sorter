@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "inventorysorter",
-  "version": "1.9.0-1.20.4",
+  "version": "1.9.0-1.20.5-custom",
   "name": "Inventory Sorter",
   "description": "Quickly and easily sort inventorys",
   "authors": [
@@ -34,7 +34,7 @@
   "depends": {
     "fabricloader": ">=0.12.5",
     "fabric": "*",
-    "java": ">=17"
+    "java": ">=21"
   },
   "accessWidener": "sorter.accesswidener"
 }
