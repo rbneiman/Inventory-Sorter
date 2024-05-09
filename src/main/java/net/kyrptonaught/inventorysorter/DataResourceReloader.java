@@ -31,18 +31,6 @@ public class DataResourceReloader implements IdentifiableResourceReloadListener 
     }
 
     private Optional<ISortTree> load(ResourceManager manager, Profiler profiler, Executor executor){
-//        for(Map.Entry<Identifier, Resource> entry: manager.findResources("tree", (a)->a.getPath().endsWith("item_tree.xml")).entrySet()) {
-//            Identifier id = entry.getKey();
-//            Resource resource = entry.getValue();
-//            logger.debug("Found sort tree xml");
-//            try (InputStream stream = manager.getResource("inventorysorter:tree/item_tree.xml").orElseThrow().getInputStream()){
-//                return Optional.of(SortTree.fromInputStream(stream));
-//            } catch (IOException e) {
-//                logger.error("Failed to load sort tree.", e);
-//                return Optional.empty();
-//            }
-//
-//        }
         Identifier id;
         try {
             id = Identifier.validate("inventorysorter:tree/item_tree.xml").getOrThrow();
@@ -58,11 +46,10 @@ public class DataResourceReloader implements IdentifiableResourceReloadListener 
             logger.error("Failed to load sort tree from file.", e);
             return Optional.empty();
         }
-//        return Optional.empty();
     }
 
     private void apply(ISortTree in, ResourceManager manager, Profiler profiler, Executor executor){
-        logger.debug("apply{} test2", in);
+        SortTree.setInstance((SortTree) in);
     }
 
     @Override

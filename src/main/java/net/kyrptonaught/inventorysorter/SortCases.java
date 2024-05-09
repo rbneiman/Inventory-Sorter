@@ -24,27 +24,6 @@ public class SortCases {
         }
     }
 
-    static String getStringForSort(ItemStack stack, SortType sortType) {
-        Item item = stack.getItem();
-        String itemName = specialCases(stack);
-        switch (sortType) {
-            case CATEGORY -> {
-                ItemGroup group = getFirstItemGroup(stack);
-                return (group != null ? group.getDisplayName().getString() : "zzz") + itemName;
-            }
-            case MOD -> {
-
-                return Registries.ITEM.getId(item).getNamespace() + itemName;
-            }
-            case NAME -> {
-                if (stack.contains(DataComponentTypes.CUSTOM_NAME)) return stack.getName() + itemName;
-            }
-        }
-
-
-        return itemName;
-    }
-
     private static ItemGroup getFirstItemGroup(ItemStack stack) {
         List<ItemGroup> groups = ItemGroups.getGroups();
         for (ItemGroup group : groups) {
