@@ -48,6 +48,11 @@ public class SortTree implements ISortTree{
     }
 
 
+    private int componentCompare(SortKey a, SortKey b){
+        // TODO compare item data
+        return 0;
+    }
+
     private int compareSortKeys(SortKey a, SortKey b) {
         boolean validA = a.itemMapping != null && a.node != null;
         boolean validB = b.itemMapping != null && b.node != null;
@@ -60,7 +65,10 @@ public class SortTree implements ISortTree{
         }
 
         if(validA && validB){
-            return a.itemMapping.compareTo(b.itemMapping);
+            if(!a.itemMapping.equals(b.itemMapping)){
+                return a.itemMapping.compareTo(b.itemMapping);
+            }
+            return componentCompare(a,b);
         }else if(validA){
             return 1;
         }else if(validB){
