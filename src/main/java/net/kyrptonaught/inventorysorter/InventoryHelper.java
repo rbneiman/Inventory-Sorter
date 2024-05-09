@@ -108,7 +108,7 @@ public class InventoryHelper {
             for (int j = stacks.size() - 1; j >= 0; j--) {
                 ItemStack oldStack = stacks.get(j);
                 if (canMergeItems(newStack, oldStack)) {
-                    combineStacks(newStack, oldStack);
+                    combineStacks(oldStack, newStack);
                     if (oldStack.getItem() == Items.AIR || oldStack.getCount() == 0) stacks.remove(j);
                 }
             }
@@ -134,7 +134,7 @@ public class InventoryHelper {
             return false;
         if (itemStack_1.getDamage() != itemStack_2.getDamage())
             return false;
-        return ItemStack.areItemsAndComponentsEqual(itemStack_1, itemStack_2) && (itemStack_1.getCount() + itemStack_2.getCount()) < itemStack_1.getMaxCount();
+        return ItemStack.areItemsAndComponentsEqual(itemStack_1, itemStack_2); // && (itemStack_1.getCount() + itemStack_2.getCount()) <= itemStack_1.getMaxCount();
     }
 
     public static boolean shouldDisplayBtns(PlayerEntity player) {
