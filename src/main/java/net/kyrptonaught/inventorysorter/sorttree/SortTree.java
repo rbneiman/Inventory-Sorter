@@ -2,6 +2,8 @@ package net.kyrptonaught.inventorysorter.sorttree;
 
 import net.kyrptonaught.inventorysorter.InventorySorterMod;
 import net.kyrptonaught.inventorysorter.interfaces.SortableContainer;
+import net.kyrptonaught.inventorysorter.sorttree.node.SortNodeGroup;
+import net.kyrptonaught.inventorysorter.sorttree.node.SortTreeNode;
 import net.minecraft.item.ItemStack;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -25,14 +27,13 @@ public class SortTree implements ISortTree{
 
     private SortTreeNode rootNode;
     private final ArrayList<SortTreeNode> nodes;
-    private final HashMap<String, Integer> idIndexMap;
-    private final HashMap<String, SortTreeNode> idNodeMap;
+    private final HashMap<String, SortNodeGroup> idGroupMap;
+//    private final HashMap<String, SortTreeNode> idNodeMap;
 
     private SortTree(){
         rootNode = null;
         nodes = new ArrayList<>();
-        idIndexMap = new HashMap<>();
-        idNodeMap = new HashMap<>();
+        idGroupMap = new HashMap<>();
     }
 
     public static @NotNull SortTree fromInputStream(InputStream inputStream)
@@ -42,9 +43,8 @@ public class SortTree implements ISortTree{
 
     private SortKey getSortKey(ItemStack stack){
         String id = stack.getItem().toString();
-        Integer itemIndex = idIndexMap.get(id);
-        SortTreeNode node = idNodeMap.get(id);
-        return new SortKey(itemIndex, stack, node);
+        SortNodeGroup sortGroup = idGroupMap.get(id);
+        return new SortKey(sortGroup, stack);
     }
 
 
@@ -54,8 +54,8 @@ public class SortTree implements ISortTree{
     }
 
     private int compareSortKeys(SortKey a, SortKey b) {
-        boolean validA = a.itemMapping != null && a.node != null;
-        boolean validB = b.itemMapping != null && b.node != null;
+        boolean validA = a.nodeGroup != null;
+        boolean validB = b.nodeGroup != null;
 
         if(!validA){
             logger.debug("Invalid key, id '{}'", a.stack().getItem().toString());
@@ -65,10 +65,10 @@ public class SortTree implements ISortTree{
         }
 
         if(validA && validB){
-            if(!a.itemMapping.equals(b.itemMapping)){
-                return a.itemMapping.compareTo(b.itemMapping);
+            if(a.nodeGroup.equals(b.nodeGroup)){
+                return a.nodeGroup.compareGroupNodes(a.stack,b.stack);
             }
-            return componentCompare(a,b);
+            return a.nodeGroup.groupIndex.compareTo(b.nodeGroup.groupIndex);
         }else if(validA){
             return 1;
         }else if(validB){
@@ -96,22 +96,24 @@ public class SortTree implements ISortTree{
         return Optional.ofNullable(INSTANCE);
     }
 
-    private record SortKey(Integer itemMapping, ItemStack stack, SortTreeNode node) {
+    private record SortKey(SortNodeGroup nodeGroup, ItemStack stack) {
     }
 
     private static class TreeParser extends DefaultHandler {
         private final Stack<SortTreeNode> nodeStack;
         private final SortTree tree;
+        private int nodeIndex;
         boolean foundRoot;
 
         private TreeParser(SortTree tree){
             this.nodeStack = new Stack<>();
             this.foundRoot = false;
             this.tree = tree;
+            nodeIndex = 0;
         }
 
         private void doVisitors(){
-            SortTreeVisitor idVisitor = new SortTreeVisitor.IDVisitor(tree.idIndexMap, tree.idNodeMap);
+            SortTreeVisitor idVisitor = new SortTreeVisitor.IDVisitor(tree.idGroupMap);
             tree.rootNode.accept(idVisitor);
         }
 
@@ -156,7 +158,8 @@ public class SortTree implements ISortTree{
                                   String qName, Attributes attributes)
                 throws SAXException {
 
-            SortTreeNode node = new SortTreeNode(qName, attributes);
+            SortTreeNode node = new SortTreeNode(nodeIndex, qName, attributes);
+            ++nodeIndex;
 
             if(!this.foundRoot){
                 tree.rootNode = node;

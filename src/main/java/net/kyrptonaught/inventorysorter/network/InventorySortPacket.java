@@ -9,11 +9,7 @@ import net.kyrptonaught.inventorysorter.InventoryHelper;
 import net.kyrptonaught.inventorysorter.client.InventorySorterModClient;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemGroups;
-import net.minecraft.registry.ServerDynamicRegistryType;
-import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 
 import java.util.List;
 

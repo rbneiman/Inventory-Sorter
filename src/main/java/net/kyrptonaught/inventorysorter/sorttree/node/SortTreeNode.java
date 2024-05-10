@@ -1,32 +1,47 @@
-package net.kyrptonaught.inventorysorter.sorttree;
+package net.kyrptonaught.inventorysorter.sorttree.node;
 
+import net.kyrptonaught.inventorysorter.InventorySorterMod;
+import net.kyrptonaught.inventorysorter.sorttree.SortTreeVisitor;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class SortTreeNode {
+    private static final Logger logger = InventorySorterMod.logger;
+
+    public final int index;
     public final String name;
     public final HashMap<String, String> attributes;
     public final ArrayList<SortTreeNode> children;
-    private boolean finalized;
+    private SortNodeData data;
 
-    public SortTreeNode(String name, Attributes attributes){
+    public SortTreeNode(int index, String name, Attributes attributes){
+        this.index = index;
         this.name = name;
+        this.data = null;
 
         children = new ArrayList<>();
-        this.finalized = false;
 
         this.attributes = new HashMap<>();
         for(int i=0; i<attributes.getLength(); ++i){
             String attribName = attributes.getQName(i);
             String value = attributes.getValue(i);
+            if(attribName.equals("data")){
+                if(data == null){
+                    data = new SortNodeData(this, value);
+                }else{
+                    logger.warn("SortNode {} has multiple data attributes. Ignoring...", name);
+                }
+            }
             this.attributes.put(attribName, value);
         }
     }
 
     public void finalizeNode(){
-        finalized = true;
+
     }
 
     public void addChild(SortTreeNode child){
@@ -39,6 +54,10 @@ public class SortTreeNode {
             child.accept(visitor);
         }
         visitor.endVisit(this);
+    }
+
+    public Optional<SortNodeData> getData(){
+        return Optional.ofNullable(data);
     }
 
     @Override
