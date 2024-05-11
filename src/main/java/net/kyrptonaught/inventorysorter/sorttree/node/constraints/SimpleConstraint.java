@@ -1,48 +1,44 @@
 package net.kyrptonaught.inventorysorter.sorttree.node.constraints;
 
 import net.kyrptonaught.inventorysorter.sorttree.node.SortTreeNode;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
-
-import java.util.ArrayList;
+import org.jetbrains.annotations.NotNull;
 
 public class SimpleConstraint implements DataConstraint{
+    private final String name;
+    private final SortTreeNode node;
+    private final String rValue;
     private final Satisfyer satisfyer;
-    private final ArrayList<SortTreeNode> nodes;
 
-    SimpleConstraint(Satisfyer satisfyer){
+    public SimpleConstraint(String name, @NotNull SortTreeNode node, @NotNull String rValue, Satisfyer satisfyer){
+        this.name = name;
+        this.node = node;
+        this.rValue = rValue;
         this.satisfyer = satisfyer;
-        this.nodes = new ArrayList<>();
     }
 
-    public Iterable<SortTreeNode> getSatisfyingNodes(ItemStack itemStack){
-        ArrayList<SortTreeNode> nodesOut = new ArrayList<>();
-        for(SortTreeNode node : nodes){
-            if(satisfyer.satisfiesConstraint(node, itemStack)){
-                nodesOut.add(node);
-            }
-        }
-        return nodesOut;
+    @Override
+    public SortTreeNode getNode() {
+        return null;
     }
 
-    public Iterable<SortTreeNode> filterSatisfyingNodes(Iterable<SortTreeNode> nodes, ItemStack itemStack){
-        ArrayList<SortTreeNode> nodesOut = new ArrayList<>();
-        for(SortTreeNode node : nodes){
-            if(satisfyer.satisfiesConstraint(node, itemStack)){
-                nodesOut.add(node);
-            }
-        }
-        return nodesOut;
+    public boolean satisfiesConstraint(ItemStack itemStack) {
+        return satisfyer.satisfies(itemStack, rValue);
     }
 
-    public void addNode(SortTreeNode node){
-        nodes.add(node);
-    }
-
-    public boolean satisfiesConstraint(SortTreeNode node, ItemStack itemStack){
-        return satisfyer.satisfiesConstraint(node, itemStack);
+    @Override
+    public DataConstraintGroup constructGroup() {
+        return new SimpleConstraintGroup(name);
     }
 
     public interface Satisfyer{
-        boolean satisfiesConstraint(SortTreeNode node, ItemStack itemStack);
+
+        boolean satisfies(ItemStack stack, String rValue);
+    }
+
+    public static void register(String name, Satisfyer satisfyer){
+        DataConstraints.registerConstraint(name, (n,r)->new SimpleConstraint(name, n,r, satisfyer));
     }
 }

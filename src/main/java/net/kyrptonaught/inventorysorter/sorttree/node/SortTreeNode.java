@@ -7,7 +7,6 @@ import org.xml.sax.Attributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Optional;
 
 public class SortTreeNode {
     private static final Logger logger = InventorySorterMod.logger;
@@ -16,22 +15,26 @@ public class SortTreeNode {
     public final String name;
     public final HashMap<String, String> attributes;
     public final ArrayList<SortTreeNode> children;
-    private SortNodeData data;
+    private final SortNodeData data;
 
     public SortTreeNode(int index, String name, Attributes attributes){
         this.index = index;
         this.name = name;
-        this.data = null;
+        this.data = new SortNodeData(this);
 
         children = new ArrayList<>();
-
+        boolean hasData = false;
         this.attributes = new HashMap<>();
         for(int i=0; i<attributes.getLength(); ++i){
             String attribName = attributes.getQName(i);
             String value = attributes.getValue(i);
             if(attribName.equals("data")){
-                if(data == null){
-                    data = new SortNodeData(this, value);
+                if(!hasData){
+                    boolean res = data.parseDataStr(value);
+                    if(!res){
+                        logger.warn("Failed to parse data string {}", value);
+                    }
+                    hasData = true;
                 }else{
                     logger.warn("SortNode {} has multiple data attributes. Ignoring...", name);
                 }
@@ -56,8 +59,8 @@ public class SortTreeNode {
         visitor.endVisit(this);
     }
 
-    public Optional<SortNodeData> getData(){
-        return Optional.ofNullable(data);
+    public SortNodeData getData(){
+        return data;
     }
 
     @Override
