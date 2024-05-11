@@ -36,9 +36,4 @@ public class PotionConstraint implements DataConstraint{ //, DataConstraints.Dat
         return node;
     }
 
-//    @Override
-//    public DataConstraint construct(String rValue) {
-//        return new SimpleConstraint(this);
-//    }
-
 }

@@ -43,7 +43,7 @@ public class SortNodeGroup {
         Iterator<Map.Entry<String, DataConstraintGroup>> entryIt = constraintGroups.entrySet().iterator();
         Collection<SortTreeNode> nodes = entryIt.next().getValue().getSatisfyingNodes(itemStack);
         while (entryIt.hasNext() && nodes.size() > 1){
-            entryIt.next().getValue().filterSatisfyingNodes(nodes, itemStack);
+            nodes = entryIt.next().getValue().filterSatisfyingNodes(nodes, itemStack);
         }
 
         if(nodes.isEmpty()){
