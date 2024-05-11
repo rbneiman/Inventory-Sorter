@@ -47,12 +47,6 @@ public class SortTree implements ISortTree{
         return new SortKey(sortGroup, stack);
     }
 
-
-    private int componentCompare(SortKey a, SortKey b){
-        // TODO compare item data
-        return 0;
-    }
-
     private int compareSortKeys(SortKey a, SortKey b) {
         boolean validA = a.nodeGroup != null;
         boolean validB = b.nodeGroup != null;
