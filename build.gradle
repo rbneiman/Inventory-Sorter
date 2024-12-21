@@ -1,6 +1,12 @@
 plugins {
-	id 'fabric-loom' version '1.6-SNAPSHOT'
+	id 'fabric-loom' version '1.9-SNAPSHOT'
 	id 'maven-publish'
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(21))
+  }
 }
 
 sourceCompatibility = JavaVersion.VERSION_21
@@ -23,10 +29,10 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include("net.kyrptonaught:kyrptconfig:1.5.8-1.20.4") { exclude group: "net.fabricmc.fabric-api" }
+	modImplementation include("net.kyrptonaught:kyrptconfig:1.6.1-1.21") { exclude group: "net.fabricmc.fabric-api" }
 
 	//update modmenu when kyrptconfig is pulling old version
-	modImplementation ("com.terraformersmc:modmenu:10.0.0-beta.1"){
+	modImplementation ("com.terraformersmc:modmenu:12.0.0-beta.1"){
 		transitive(false)
 	}
 }
@@ -44,10 +50,10 @@ processResources {
 	}
 }
 
-tasks.withType(JavaCompile).configureEach {
-	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-	it.options.release = 21
-}
+// tasks.withType(JavaCompile).configureEach {
+// 	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
+// 	it.options.release = 21
+// }
 
 jar {
 	from("LICENSE") {

@@ -91,6 +91,13 @@ public abstract class MixinContainerScreen extends Screen implements SortableCon
         }
     }
 
+    @Inject(method = "mouseScrolled", at = @At("HEAD"))
+    private void setInvsort$MouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount, CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
+        if(invsort$SortBtn.isHovered()){
+            invsort$SortBtn.mouseScrolled(mouseX,mouseY,horizontalAmount,verticalAmount);
+        }
+    }
+
     @Inject(method = "render", at = @At("TAIL"))
     private void invsort$render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (invsort$SortBtn != null)

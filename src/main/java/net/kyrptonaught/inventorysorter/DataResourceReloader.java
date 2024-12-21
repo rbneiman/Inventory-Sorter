@@ -23,14 +23,15 @@ public class DataResourceReloader implements IdentifiableResourceReloadListener 
     private static final Logger logger = InventorySorterMod.logger;
 
     @Override
-    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
+    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Executor prepareExecutor, Executor applyExecutor){
+//    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
 
-        return CompletableFuture.supplyAsync(() -> load(manager, prepareProfiler, prepareExecutor), prepareExecutor)
+        return CompletableFuture.supplyAsync(() -> load(manager, prepareExecutor), prepareExecutor)
                 .thenCompose(synchronizer::whenPrepared)
-                .thenAcceptAsync((o) -> o.ifPresent((p)->apply(p, manager, applyProfiler, applyExecutor)), applyExecutor);
+                .thenAcceptAsync((o) -> o.ifPresent((p)->apply(p, manager, applyExecutor)), applyExecutor);
     }
 
-    private Optional<ISortTree> load(ResourceManager manager, Profiler profiler, Executor executor){
+    private Optional<ISortTree> load(ResourceManager manager, Executor executor){
         Identifier id;
         try {
             id = Identifier.validate("inventorysorter:tree/item_tree.xml").getOrThrow();
@@ -48,12 +49,12 @@ public class DataResourceReloader implements IdentifiableResourceReloadListener 
         }
     }
 
-    private void apply(ISortTree in, ResourceManager manager, Profiler profiler, Executor executor){
+    private void apply(ISortTree in, ResourceManager manager, Executor executor){
         SortTree.setInstance((SortTree) in);
     }
 
     @Override
     public Identifier getFabricId() {
-        return new Identifier(InventorySorterMod.MOD_ID, "data_reloader");
+        return Identifier.of(InventorySorterMod.MOD_ID, "data_reloader");
     }
 }

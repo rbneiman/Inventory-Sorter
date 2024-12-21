@@ -42,9 +42,9 @@ public class SortCases {
         }
         if (stack.getCount() != stack.getMaxCount())
             return stackSize(stack);
-        if (item instanceof EnchantedBookItem)
+        if (stack.isEnchantable())
             return enchantedBookNameCase(stack);
-        if (item instanceof ToolItem)
+        if (stack.isDamageable())
             return toolDuribilityCase(stack);
         return item.toString();
     }
@@ -73,8 +73,8 @@ public class SortCases {
         StringBuilder enchantNames = new StringBuilder();
 
         for(RegistryEntry<Enchantment> entry : enchantments){
-            Enchantment enchantment = entry.value();
-            names.add(enchantment.getName(enchantmentsComponent.getLevel(enchantment)).getString());
+//            Enchantment enchantment = entry.value();
+            names.add(Enchantment.getName(entry, enchantmentsComponent.getLevel(entry)).getString());
         }
 
         Collections.sort(names);

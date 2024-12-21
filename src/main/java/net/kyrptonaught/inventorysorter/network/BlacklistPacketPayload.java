@@ -6,9 +6,10 @@ import net.kyrptonaught.inventorysorter.client.config.IgnoreList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
 
 public record BlacklistPacketPayload(String[] hides, String[] noSorts) implements CustomPayload {
-    public static final Id<BlacklistPacketPayload> ID = CustomPayload.id("inventorysorter:sync_blacklist_packet");
+    public static final Id<BlacklistPacketPayload> ID = new Id<>(Identifier.of(InventorySorterMod.MOD_ID,"sync_blacklist_packet"));
     public static final PacketCodec<PacketByteBuf, BlacklistPacketPayload> CODEC = PacketCodec.of(BlacklistPacketPayload::write, BlacklistPacketPayload::read);
 
     // or you can also write like this:
